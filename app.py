@@ -1,25 +1,47 @@
 import streamlit as st
 import re
 
-st.set_page_config(page_title="Editor AI", layout="centered")
-st.title("📝 Editor Testo AI")
+st.set_page_config(page_title="Editor Editoriale AI", layout="wide")
 
-testo_input = st.text_area("Incolla qui il tuo testo:", height=300)
+st.title("🖋️ Editor Editoriale – Bold Titoli e Parole Chiave")
 
-def evidenzia_testo(testo):
-    righe = testo.split('\n')
-    risultato = []
-    for riga in righe:
-        if re.match(r'^\s*\d+[\.\)]\s+', riga) or re.match(r'^\s*[A-Z][a-z]+:', riga):
-            risultato.append(f"**{riga.strip()}**")
-        else:
-            parole = riga.split()
-            evidenziate = [f"**{p}**" if len(p) > 8 else p for p in parole]
-            risultato.append(" ".join(evidenziate))
-    return "\n".join(risultato)
+# Input utente
+user_text = st.text_area("Inserisci il tuo testo qui", height=300)
 
-if st.button("✨ Applica Formattazione"):
-    if testo_input:
-        st.markdown(evidenzia_testo(testo_input))
-    else:
-        st.warning("Inserisci un testo prima di procedere.")
+# Parole chiave da evidenziare (input manuale)
+keywords_input = st.text_input("Parole chiave da evidenziare (separate da virgola)", "")
+
+# Pulsante per processare il testo
+if st.button("Applica Formattazione"):
+    keywords = [kw.strip() for kw in keywords_input.split(",") if kw.strip()]
+
+    # Funzione per evidenziare parole chiave
+    def bold_keywords(text, keywords):
+        for kw in keywords:
+            text = re.sub(rf'\b({re.escape(kw)})\b', r'**\1**', text, flags=re.IGNORECASE)
+        return text
+
+    # Funzione per rendere in grassetto titoli (es: Titolo: ... o # Titolo)
+    def bold_titles(text):
+        lines = text.split("\n")
+        formatted = []
+        for line in lines:
+            if line.strip().endswith(":") or line.strip().startswith("#"):
+                formatted.append(f"**{line.strip()}**")
+            else:
+                formatted.append(line)
+        return "\n".join(formatted)
+
+    # Applica entrambe le formattazioni
+    processed = bold_keywords(user_text, keywords)
+    processed = bold_titles(processed)
+
+    st.markdown("### Risultato Formattato")
+    st.markdown(processed)
+
+---
+
+## 📄 File `requirements.txt`
+
+```txt
+streamlit
